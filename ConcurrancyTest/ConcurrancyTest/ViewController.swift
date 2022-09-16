@@ -48,7 +48,7 @@ class ViewController: UIViewController {
     }
     
     func download() {
-        self.queueType = .dispatchGroup
+        self.queueType = .dispatchGroupConcurrent
         switch queueType {
         case .normal:
             self.regularDownload()
@@ -60,8 +60,10 @@ class ViewController: UIViewController {
             self.operationQueue()
         case .blockOperation:
             self.blockOperationQueue()
-        case .dispatchGroup:
-            self.dispatchGroup()
+        case .dispatchGroupSerial:
+            self.dispatchGroupSerial()
+        case .dispatchGroupConcurrent:
+            self.dispatchGroupConcurrent()
         }
     }
     
@@ -135,7 +137,7 @@ class ViewController: UIViewController {
         }
     }
     
-    private func dispatchGroup() {
+    private func dispatchGroupSerial() {
         DispatchQueue.global(qos: .default).async {
             let downloadGroup = DispatchGroup()
             downloadGroup.enter()
@@ -175,6 +177,46 @@ class ViewController: UIViewController {
             downloadGroup.notify(queue: DispatchQueue.main) {
                 print("all actions completed")
             }
+        }
+    }
+    
+    private func dispatchGroupConcurrent() {
+        let queue = DispatchQueue.global(qos: .default)
+        let downloadGroup = DispatchGroup()
+        queue.async(group: downloadGroup) {
+            let image1 = Downloader.downloadImageWithUrl(url: self.imageUrl[0])
+            print("Task 1 completed")
+            DispatchQueue.main.async {
+                self.imageView1.image = image1
+            }
+        }
+        
+        queue.async(group: downloadGroup) {
+            let image2 = Downloader.downloadImageWithUrl(url: self.imageUrl[1])
+            print("Task 2 completed")
+            DispatchQueue.main.async {
+                self.imageView2.image = image2
+            }
+        }
+        
+        queue.async(group: downloadGroup) {
+            let image3 = Downloader.downloadImageWithUrl(url: self.imageUrl[2])
+            print("Task 3 completed")
+            DispatchQueue.main.async {
+                self.imageView3.image = image3
+            }
+        }
+        
+        queue.async(group: downloadGroup) {
+            let image4 = Downloader.downloadImageWithUrl(url: self.imageUrl[3])
+            print("Task 4 completed")
+            DispatchQueue.main.async {
+                self.imageView4.image = image4
+            }
+        }
+
+        downloadGroup.notify(queue: DispatchQueue.main) {
+            print("all actions completed")
         }
     }
     
@@ -270,7 +312,8 @@ enum QueueType {
     case normal
     case concurrent
     case serial
-    case dispatchGroup
+    case dispatchGroupSerial
+    case dispatchGroupConcurrent
     case operation
     case blockOperation
 }
