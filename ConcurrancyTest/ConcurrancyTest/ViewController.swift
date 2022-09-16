@@ -48,7 +48,7 @@ class ViewController: UIViewController {
     }
     
     func download() {
-        self.queueType = .blockOperation
+        self.queueType = .dispatchGroup
         switch queueType {
         case .normal:
             self.regularDownload()
@@ -60,6 +60,8 @@ class ViewController: UIViewController {
             self.operationQueue()
         case .blockOperation:
             self.blockOperationQueue()
+        case .dispatchGroup:
+            self.dispatchGroup()
         }
     }
     
@@ -133,27 +135,74 @@ class ViewController: UIViewController {
         }
     }
     
+    private func dispatchGroup() {
+        DispatchQueue.global(qos: .default).async {
+            let downloadGroup = DispatchGroup()
+            downloadGroup.enter()
+            let image1 = Downloader.downloadImageWithUrl(url: self.imageUrl[0])
+            print("Task 1 completed")
+            DispatchQueue.main.async {
+                self.imageView1.image = image1
+            }
+            downloadGroup.leave()
+
+            downloadGroup.enter()
+            let image2 = Downloader.downloadImageWithUrl(url: self.imageUrl[1])
+            print("Task 2 completed")
+            DispatchQueue.main.async {
+                self.imageView2.image = image2
+            }
+            downloadGroup.leave()
+
+       
+            downloadGroup.enter()
+            let image3 = Downloader.downloadImageWithUrl(url: self.imageUrl[2])
+            print("Task 3 completed")
+            DispatchQueue.main.async {
+                self.imageView3.image = image3
+            }
+            downloadGroup.leave()
+
+            
+            downloadGroup.enter()
+            let image4 = Downloader.downloadImageWithUrl(url: self.imageUrl[3])
+            print("Task 4 completed")
+            DispatchQueue.main.async {
+                self.imageView4.image = image4
+            }
+            downloadGroup.leave()
+            
+            downloadGroup.notify(queue: DispatchQueue.main) {
+                print("all actions completed")
+            }
+        }
+    }
+    
     private func operationQueue() {
         let queue = OperationQueue()
         queue.addOperation { () -> Void in
+            print("Task1 started")
             let image1 = Downloader.downloadImageWithUrl(url: self.imageUrl[0])
             OperationQueue.main.addOperation {
                 self.imageView1.image = image1
             }
         }
         queue.addOperation { () -> Void in
+            print("Task2 started")
             let image2 = Downloader.downloadImageWithUrl(url: self.imageUrl[1])
             OperationQueue.main.addOperation {
                 self.imageView2.image = image2
             }
         }
         queue.addOperation { () -> Void in
+            print("Task3 started")
             let image3 = Downloader.downloadImageWithUrl(url: self.imageUrl[2])
             OperationQueue.main.addOperation {
                 self.imageView3.image = image3
             }
         }
         queue.addOperation { () -> Void in
+            print("Task4 started")
             let image4 = Downloader.downloadImageWithUrl(url: self.imageUrl[3])
             OperationQueue.main.addOperation {
                 self.imageView4.image = image4
@@ -221,6 +270,7 @@ enum QueueType {
     case normal
     case concurrent
     case serial
+    case dispatchGroup
     case operation
     case blockOperation
 }
