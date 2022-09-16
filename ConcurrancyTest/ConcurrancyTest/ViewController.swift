@@ -156,7 +156,6 @@ class ViewController: UIViewController {
             }
             downloadGroup.leave()
 
-       
             downloadGroup.enter()
             let image3 = Downloader.downloadImageWithUrl(url: self.imageUrl[2])
             print("Task 3 completed")
@@ -165,7 +164,6 @@ class ViewController: UIViewController {
             }
             downloadGroup.leave()
 
-            
             downloadGroup.enter()
             let image4 = Downloader.downloadImageWithUrl(url: self.imageUrl[3])
             print("Task 4 completed")
